@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+from wifi_sensor import wifi_sensor
+import rospy
+
+if __name__ == "__main__":
+  try:
+    wifisensor = wifi_sensor.WifiSensor()
+  except rospy.ROSInterruptException:
+    pass
