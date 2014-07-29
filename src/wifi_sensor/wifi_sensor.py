@@ -24,6 +24,7 @@ class WifiSensor():
         self.data = {}
       for addr in data.keys():
         msg = Rssi()
+        msg.header.stamp = rospy.Time.now()
         msg.macaddr = addr
         msg.rssi = data[addr]
         self.pub.publish(msg)
