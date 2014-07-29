@@ -12,6 +12,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   Rssi.msg
+  RssiMulti.msg
 )
 
 generate_messages(

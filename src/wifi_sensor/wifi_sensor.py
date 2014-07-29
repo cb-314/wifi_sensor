@@ -4,7 +4,7 @@ import rospy
 import time
 import scapy.all as sca
 import numpy as np
-from msg import Rssi
+from msg import *
 import thread
 
 class WifiSensor():
@@ -15,19 +15,22 @@ class WifiSensor():
     thread.start_new_thread(self.mesRaw, ())
     # setup main loop
     rospy.init_node("wifisensor")
-    self.pub = rospy.Publisher("rssi", Rssi, queue_size=10)
-    r = rospy.Rate(10) # 10Hz
+    self.pub = rospy.Publisher("rssi", RssiMulti, queue_size=10)
+    r = rospy.Rate(5)
     while not rospy.is_shutdown():
       data = {}
       with self.dataMutex:
         data = dict(self.data)
         self.data = {}
+      msg = RssiMulti()
+      msg.header.stamp = rospy.Time.now()
       for addr in data.keys():
-        msg = Rssi()
-        msg.header.stamp = rospy.Time.now()
-        msg.macaddr = addr
-        msg.rssi = data[addr]
-        self.pub.publish(msg)
+        submsg = Rssi()
+        submsg.header.stamp = rospy.Time.now()
+        submsg.macaddr = addr
+        submsg.rssi = data[addr]
+        msg.data.append(submsg)
+      self.pub.publish(msg)
       r.sleep()
   def mesRaw(self):
     while not rospy.is_shutdown():
