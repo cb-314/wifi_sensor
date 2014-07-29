@@ -1,3 +1,3 @@
 Header header
-float64 rssi
-float64 variance
+string macaddr
+float32[] rssi
