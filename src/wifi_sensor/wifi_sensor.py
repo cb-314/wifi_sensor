@@ -10,7 +10,7 @@ import subprocess
 
 class WifiSensor():
   def __init__(self):
-    # setup orspy and get parameters
+    # setup rospy and get parameters
     rospy.init_node("wifisensor")
     self.adapter = rospy.get_param("~adapter", "wlan0")
     self.channel = rospy.get_param("~channel", 9)
