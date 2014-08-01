@@ -6,6 +6,7 @@ ROS package to use the RSSI of a wifi card as a sensor
 
 * `string` adapter
 * `int` channel
+* `int` rate (Hz)
 
 ## Notes
 
