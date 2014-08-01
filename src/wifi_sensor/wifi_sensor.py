@@ -20,6 +20,9 @@ class WifiSensor():
     subprocess.call(["iwconfig", self.adapter, "mode", "monitor"])
     subprocess.call(["ifconfig", self.adapter, "up"])
     subprocess.call(["iwconfig", self.adapter, "channel", str(self.channel)])
+    # find your own mac addr
+    output = subprocess.check_output(["ifconfig", "-a", self.adapter])
+    self.my_addr = "-".join([x.lower() for x in output.split(" ")[output.split(" ").index("HWaddr")+1].split("-")[:6]])
     # setup shared data for threads and start
     self.data = {}
     self.dataMutex = thread.allocate_lock()
@@ -38,7 +41,8 @@ class WifiSensor():
       for addr in data.keys():
         submsg = Rssi()
         submsg.header.stamp = rospy.Time.now()
-        submsg.macaddr = addr
+        submsg.my_mac_addr = self.my_addr
+        submsg.their_mac_addr = addr
         submsg.rssi = data[addr]
         msg.data.append(submsg)
       self.pub.publish(msg)
