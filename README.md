@@ -1,7 +1,4 @@
-wifi_sensor
-===========
-
-# Description
+# Description of wiwi_sensor
 
 ROS package to use the RSSI of a wifi card as a sensor
 
