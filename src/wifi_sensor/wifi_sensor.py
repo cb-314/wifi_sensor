@@ -6,6 +6,7 @@ import scapy.all as sca
 import numpy as np
 from msg import *
 import thread
+import subprocess
 
 class WifiSensor():
   def __init__(self):
@@ -16,6 +17,11 @@ class WifiSensor():
     # get parameters
     self.adapter = rospy.get_param("~adapter", "wlan0")
     self.channel = rospy.get_param("~channel", 9)
+    # setup wifi adapter
+    subprocess.call(["ifconfig", self.adapter, "down"])
+    subprocess.call(["iwconfig", self.adapter, "mode", "monitor"])
+    subprocess.call(["ifconfig", self.adapter, "up"])
+    subprocess.call(["iwconfig", self.adapter, "channel", str(self.channel)])
     # setup shared data for threads and start
     self.data = {}
     self.dataMutex = thread.allocate_lock()
