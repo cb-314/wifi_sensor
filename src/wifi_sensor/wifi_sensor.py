@@ -10,13 +10,11 @@ import subprocess
 
 class WifiSensor():
   def __init__(self):
-    # setup main loop and rospy
+    # setup orspy and get parameters
     rospy.init_node("wifisensor")
-    self.pub = rospy.Publisher("rssi", RssiMulti, queue_size=10)
-    r = rospy.Rate(5)
-    # get parameters
     self.adapter = rospy.get_param("~adapter", "wlan0")
     self.channel = rospy.get_param("~channel", 9)
+    self.rate = rospy.get_param("~rate", 5)
     # setup wifi adapter
     subprocess.call(["ifconfig", self.adapter, "down"])
     subprocess.call(["iwconfig", self.adapter, "mode", "monitor"])
@@ -26,6 +24,9 @@ class WifiSensor():
     self.data = {}
     self.dataMutex = thread.allocate_lock()
     thread.start_new_thread(self.mesRaw, ())
+    # setup main loop
+    self.pub = rospy.Publisher("rssi", RssiMulti, queue_size=10)
+    r = rospy.Rate(self.rate)
     # main loop
     while not rospy.is_shutdown():
       data = {}
