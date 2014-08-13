@@ -1,6 +1,6 @@
 # Description of wifi_sensor
 
-ROS package to use the RSSI of a wifi card as a sensor
+ROS package to use the RSSI of a wifi card as a sensor. Measurements are pulished to the `rssi` topic.
 
 ## Parameters
 
