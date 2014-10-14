@@ -14,7 +14,7 @@ class WifiSensor():
     rospy.init_node("wifisensor")
     self.adapter = rospy.get_param("~adapter", "wlan0")
     self.channel = rospy.get_param("~channel", 9)
-    self.rate = rospy.get_param("~rate", 5)
+    self.rate = rospy.get_param("~rate", 20)
     # setup wifi adapter
     subprocess.call(["ifconfig", self.adapter, "down"])
     subprocess.call(["iwconfig", self.adapter, "mode", "monitor"])
@@ -66,15 +66,14 @@ class WifiSensor():
           rssi = None
           # addr
           candidates = [[chunk, len(chunk.split(":"))] for chunk in chunks if ":" in chunk]
-          candidates = [candidate[0] for candidate in candidates if candidate[1] == 7]
-          candidates = [candidate for candidate in candidates if candidate[0:3] == "SA:"]
+          candidates = [candidate[0] for candidate in candidates if candidate[1] == 7 and candidate[0][0:3] == "SA:"]
           if len(candidates) == 1:
             addr = candidates[0][3:]
           # rssi
           if "signal" in chunks:
             rssi = int(chunks[chunks.index("signal")-1][:-2])
           # store
-          if addr is not None and rssi is not None:
+          if addr is not None and rssi is not None and rssi < 0:
             with self.dataMutex:
               if addr in self.data.keys():
                 self.data[addr].append(rssi)
