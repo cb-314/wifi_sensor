@@ -2,7 +2,6 @@
 
 import rospy
 import time
-import scapy.all as sca
 import numpy as np
 from msg import *
 import thread
@@ -58,36 +57,28 @@ class WifiSensor():
       self.pub.publish(msg)
       r.sleep()
   def mesRaw(self):
+    p = subprocess.Popen(("tcpdump", "-l", "-e", "-i", self.adapter), stdout=subprocess.PIPE)
     while not rospy.is_shutdown():
-      packets = sca.sniff(iface=self.adapter, count = 10)
-      for pkt in packets:
-        addr, rssi = self.parsePacket(pkt)
-        if addr is not None:
-          with self.dataMutex:
-            if addr in self.data.keys():
-              self.data[addr].append(rssi)
-            else:
-              self.data[addr] = [rssi]
-  def parsePacket(self, pkt):
-    if pkt.haslayer(sca.Dot11):
-      if pkt.addr2 is not None:
-        # check available Radiotap fields
-        field, val = pkt.getfield_and_val("present")
-        names = [field.names[i][0] for i in range(len(field.names)) if (1 << i) & val != 0]
-        # check if we measured signal strength
-        if "dBm_AntSignal" in names:
-          # decode radiotap header
-          fmt = "<"
-          rssipos = 0
-          for name in names:
-            # some fields consist of more than one value
-            if name == "dBm_AntSignal":
-              # correct for little endian format sign
-              rssipos = len(fmt)-1
-            fmt = fmt + self.radiotap_formats[name]
-          # unfortunately not all platforms work equally well and on my arm
-          # platform notdecoded was padded with a ton of zeros without
-          # indicating more fields in pkt.len and/or padding in pkt.pad
-          decoded = struct.unpack(fmt, pkt.notdecoded[:struct.calcsize(fmt)])
-          return pkt.addr2, decoded[rssipos]
-    return None, None
+      try:
+        for line in iter(p.stdout.readline, ""):
+	  chunks = line.split(" ")
+          addr = None
+          rssi = None
+          # addr
+          candidates = [[chunk, len(chunk.split(":"))] for chunk in chunks if ":" in chunk]
+          candidates = [candidate[0] for candidate in candidates if candidate[1] == 7]
+          candidates = [candidate for candidate in candidates if candidate[0:3] == "SA:"]
+          if len(candidates) == 1:
+            addr = candidates[0][3:]
+          # rssi
+          if "signal" in chunks:
+            rssi = int(chunks[chunks.index("signal")-1][:-2])
+          # store
+          if addr is not None and rssi is not None:
+            with self.dataMutex:
+              if addr in self.data.keys():
+                self.data[addr].append(rssi)
+              else:
+                self.data[addr] = [rssi]
+      except:
+        pass
