@@ -23,15 +23,6 @@ class WifiSensor():
     # find your own mac addr
     output = subprocess.check_output(["ifconfig", "-a", self.adapter])
     self.my_addr = "-".join([x.lower() for x in output.split(" ")[output.split(" ").index("HWaddr")+1].split("-")[:6]])
-    # Radiotap field specifications
-    self.radiotap_formats = {"TSFT":"Q", "Flags":"B", "Rate":"B",
-      "Channel":"HH", "FHSS":"BB", "dBm_AntSignal":"b", "dBm_AntNoise":"b",
-      "Lock_Quality":"H", "TX_Attenuation":"H", "dB_TX_Attenuation":"H",
-      "dBm_TX_Power":"b", "Antenna":"B",  "dB_AntSignal":"B",
-      "dB_AntNoise":"B", "b14":"H", "b15":"B", "b16":"B", "b17":"B", "b18":"B",
-      "b19":"BBB", "b20":"LHBB", "b21":"HBBBBBH", "b22":"B", "b23":"B",
-      "b24":"B", "b25":"B", "b26":"B", "b27":"B", "b28":"B", "b29":"B",
-      "b30":"B", "Ext":"B"}
     # setup shared data for threads and start
     self.data = {}
     self.dataMutex = thread.allocate_lock()
@@ -61,7 +52,7 @@ class WifiSensor():
     while not rospy.is_shutdown():
       try:
         for line in iter(p.stdout.readline, ""):
-	  chunks = line.split(" ")
+          chunks = line.split(" ")
           addr = None
           rssi = None
           # addr
